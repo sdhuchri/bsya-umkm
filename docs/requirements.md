@@ -1,61 +1,101 @@
-# BSya UMKM+ — Requirements (Prototype)
+# BSya UMKM+ — Requirements (Prototype, Full-Stack)
 
-> Dokumen kebutuhan untuk membangun ulang prototype **BSya UMKM+** (Super App UMKM dari BCA Syariah) menggunakan Next.js. Dokumen ini disusun berdasarkan dua mockup HTML referensi: `BSya_Onboarding__standalone_.html` dan `BSya_UMKM__standalone_.html`.
+> Dokumen kebutuhan untuk **BSya UMKM+** (Super App UMKM dari BCA Syariah). Disusun dari dua mockup desain (`BSya Onboarding (standalone).html`, `BSya UMKM (standalone).html`). Versi ini memakai arsitektur **full-stack**: frontend **Next.js** + backend **Go (Gin)** + **PostgreSQL**, dideploy ke **Railway**.
 
 ---
 
 ## 1. Ringkasan Produk
 
-BSya UMKM+ adalah aplikasi "super app" untuk pelaku UMKM yang menggabungkan pencatatan keuangan, perpajakan, manajemen supplier/customer, periklanan, dan permodalan dalam satu tempat — dibantu AI.
+BSya UMKM+ adalah "super app" untuk pelaku UMKM yang menggabungkan pencatatan keuangan, perpajakan, manajemen supplier/customer, periklanan, dan permodalan dalam satu tempat — dibantu AI.
 
-Aplikasi punya dua wajah:
-- **Web Dashboard** (tampilan laptop/desktop) — untuk pemilik usaha mengelola bisnis secara lengkap.
-- **Mobile App** (tampilan ponsel) — versi ringkas untuk akses cepat di lapangan.
-
-Untuk fase prototype ini, fokusnya adalah **satu alur utuh**: nasabah login → (jika pertama kali) onboarding AI → dashboard yang terisi berdasarkan jawaban onboarding.
+Alur utama prototype: **login → (jika pertama kali) onboarding AI → dashboard yang terisi berdasarkan jawaban onboarding.**
 
 ### 1.1 Tujuan Prototype
-- Membuktikan alur pengalaman: **login → onboarding → dashboard personalisasi**.
-- Tanpa database & backend sungguhan dulu — gunakan data mock / in-memory.
-- Mengintegrasikan **LLM via Amazon Bedrock** untuk fitur-fitur AI.
+- Membuktikan alur: **login → onboarding → dashboard personalisasi**.
+- Backend Go (Gin) + PostgreSQL menyimpan profil onboarding **dan** data dashboard.
+- Mengintegrasikan **LLM via Amazon Bedrock** (server-side, di backend Go) untuk fitur AI.
+- Bisa dijalankan lokal via `docker compose`, dan dideploy ke **Railway** (frontend, backend, Postgres terpisah).
 
 ### 1.2 Di Luar Cakupan (Non-Goals) Fase Ini
-- Tidak ada database persisten (PostgreSQL, dll).
-- Tidak ada autentikasi sungguhan (OAuth, JWT server-side, dll) — login disimulasikan.
-- Tidak ada integrasi pembayaran, mutasi rekening real, atau API pihak ketiga (Instagram/TikTok/DJP).
-- Tidak ada multi-user / multi-tenant.
+- **Autentikasi sungguhan** — login disimulasikan (input apa pun bisa masuk; backend memetakan ke satu user demo). JWT/OAuth menyusul.
+- Integrasi pembayaran, mutasi rekening real, atau API pihak ketiga (Instagram/TikTok/DJP).
+- Multi-tenant penuh (skema sudah `user_id`-aware, tapi auth belum membedakan user).
+- Tampilan **mobile app** (bottom-tab) — fokus fase ini **web app**; mobile menyusul.
 
 ---
 
-## 2. Tech Stack
-
-| Komponen | Pilihan | Catatan |
-|---|---|---|
-| Framework | **Next.js 16.2+** (terbaru 16.2.6) | App Router + Turbopack (default) |
-| Runtime | **Node.js 20.9+** | Wajib minimum untuk Next.js 16 |
-| UI Library | React 19.2 | Sudah include di Next.js 16 |
-| Bahasa | TypeScript | Default `create-next-app` |
-| Styling | Inline style / CSS sesuai mockup; opsional Tailwind | Mockup memakai inline style + font Nunito |
-| State | React state + Context (`useState`, `useContext`) | Cukup untuk prototype |
-| Penyimpanan data | **In-memory / mock + `localStorage`** | Pengganti DB untuk simpan profil onboarding |
-| LLM | **Amazon Bedrock** | Diakses lewat Next.js Route Handler (server-side) |
-| Containerization | **Docker** | Lihat bagian Docker di bawah |
-
-### 2.1 Catatan "Tanpa Backend & Database"
-Karena prototype, kita tidak memakai database atau server backend terpisah. Namun:
-- Panggilan ke **Amazon Bedrock harus tetap dijalankan server-side** (lewat Next.js Route Handler / `app/api/.../route.ts`), supaya AWS credential tidak bocor ke browser. Ini bukan "backend penuh", hanya thin proxy bawaan Next.js.
-- Data profil hasil onboarding disimpan di **`localStorage`** + state Context, sehingga setelah onboarding selesai dashboard bisa membaca data tersebut. Saat user clear storage / pertama kali buka, status dianggap "first login".
-
----
-
-## 3. Alur Aplikasi (User Flow)
+## 2. Arsitektur & Tech Stack
 
 ```
-[Login] ──► sudah pernah onboarding? 
+                    ┌────────────────────┐       ┌─────────────────────┐       ┌──────────────┐
+  Browser  ───────► │  Frontend (Next.js) │ ────► │  Backend (Go + Gin)  │ ────► │  PostgreSQL  │
+                    │  web app / UI       │  HTTP │  REST API + LLM proxy│  SQL  │  (Railway)   │
+                    └────────────────────┘       └─────────┬───────────┘       └──────────────┘
+                                                            │ AWS SDK
+                                                            ▼
+                                                   ┌──────────────────┐
+                                                   │  Amazon Bedrock  │
+                                                   └──────────────────┘
+```
+
+| Lapisan | Pilihan | Catatan |
+|---|---|---|
+| Frontend | **Next.js 16** (App Router, Turbopack), React 19, TypeScript | UI inline-style sesuai mockup, font Nunito |
+| Backend | **Go 1.26 + Gin** | REST API, CORS, proxy LLM ke Bedrock |
+| Database | **PostgreSQL 16** | Profil onboarding + semua data dashboard (JSONB per section) |
+| DB driver | `jackc/pgx/v5` (+ pgxpool) | Migrasi & seed dijalankan saat startup |
+| LLM | **Amazon Bedrock** (`aws-sdk-go-v2/service/bedrockruntime`) | Dipanggil **dari backend Go** (bukan frontend) |
+| Deploy | **Railway** | 3 service: frontend, backend, Postgres (plugin) |
+| Containerization | **Docker** (multi-stage) + `docker-compose.yml` | Untuk dev lokal & Railway (Dockerfile builder) |
+
+### 2.1 Prinsip "graceful fallback"
+- **Tanpa `DATABASE_URL`** → backend jalan dengan **data demo in-memory** (profil di map, dashboard dari dataset bawaan). Memudahkan dev tanpa Postgres.
+- **Tanpa kredensial Bedrock** (`AWS_REGION`/`BEDROCK_MODEL_ID` kosong) → endpoint AI mengembalikan **respons mock**. App tetap jalan tanpa AWS.
+
+---
+
+## 3. Struktur Repo
+
+```
+bsya-umkm/
+├── docker-compose.yml          # db + backend + frontend (dev lokal)
+├── docs/                       # requirements + mockup HTML
+├── frontend/                   # Next.js web app
+│   ├── app/
+│   │   ├── page.tsx            # redirect: login / onboarding / dashboard
+│   │   ├── login/page.tsx
+│   │   ├── onboarding/page.tsx
+│   │   └── dashboard/{layout,page, laporan,pajak,supplier,iklan,modal}
+│   ├── components/             # Mark, Deco, Chip, ProgressBar, PageHeader, icons
+│   ├── context/ProfileContext.tsx
+│   ├── data/questions.ts       # Q_BRANCH_A/B/C + BRANCH_MAP
+│   ├── lib/{theme,profile,api}.ts   # api.ts = client ke backend Go
+│   ├── types/index.ts
+│   ├── Dockerfile · railway.json · .env.example
+│   └── next.config.ts (output: standalone)
+└── backend/                    # Go + Gin
+    ├── cmd/server/main.go
+    ├── internal/
+    │   ├── config/             # env loader
+    │   ├── models/             # struct domain
+    │   ├── data/               # dataset demo (seed + fallback)
+    │   ├── store/              # pgx store + schema.sql + seed (in-memory fallback)
+    │   ├── ai/                 # Bedrock client + mock fallback
+    │   ├── handlers/           # gin handlers
+    │   └── router/             # routing + CORS
+    ├── Dockerfile · railway.json · .env.example
+    └── go.mod
+```
+
+---
+
+## 4. Alur Aplikasi (User Flow)
+
+```
+[Login] ──► sudah pernah onboarding?
                  │
         ┌────────┴────────┐
        Tidak             Ya
-        │                 │
         ▼                 ▼
   [Onboarding AI]   [Dashboard]
         │
@@ -63,274 +103,140 @@ Karena prototype, kita tidak memakai database atau server backend terpisah. Namu
   [Dashboard terisi data onboarding]
 ```
 
-1. **Login** — nasabah masuk (disimulasikan; cukup tombol/form sederhana, tanpa verifikasi server).
-2. **Cek status onboarding** — aplikasi cek apakah profil bisnis sudah ada (`localStorage`).
-   - Belum ada → arahkan ke **Onboarding**.
-   - Sudah ada → langsung ke **Dashboard**.
-3. **Onboarding AI** — serangkaian pertanyaan; jawaban disimpan ke profil.
-4. **Dashboard** — menampilkan data & modul yang dikonfigurasi berdasarkan jawaban onboarding.
+1. **Login** — disimulasikan (tekan "Masuk"). Status login disimpan di `localStorage` (`bsya_auth`).
+2. **Cek status onboarding** — cek profil. Belum ada → onboarding; sudah ada → dashboard.
+3. **Onboarding AI** — multi-step; jawaban → `BusinessProfile`, disimpan ke `localStorage` (cache guard) **dan** ke backend (POST `/api/profile` → Postgres).
+4. **Dashboard** — menampilkan data dari backend (`GET /api/dashboard/:section`) + identitas dari profil.
 
 ---
 
-## 4. Modul Onboarding (dari `BSya_Onboarding`)
+## 5. Modul Onboarding (`BSya Onboarding`)
 
-Onboarding adalah multi-step form yang dipandu "BSya AI". Ada **3 cabang (branch)** sesuai posisi bisnis nasabah.
+Multi-step form dipandu "BSya AI". **3 cabang**, konten verbatim dari mockup di `frontend/data/questions.ts`.
 
-### 4.1 Tahapan Layar
-| Step | Layar | Keterangan |
+| Step | Layar |
+|---|---|
+| Welcome | "Halo! Saya BSya AI 👋" · "2 menit · 8 pertanyaan" · *Mulai kenalan* |
+| Branch Select | "Posisi bisnismu saat ini?" (A: sudah jalan · C: baru mulai · B: masih ide) |
+| Questions | per cabang, progress bar. Tipe: `single`, `multi`, `text`, `text-chips` |
+| Summary | kartu Profil + CTA rekomendasi (maks 3, dari jawaban kebutuhan) · *Buka Dashboard* |
+
+Jumlah pertanyaan: **A=10, B=10, C=8**. CTA mapping: modal→Permodalan, pajak→Pajak AI, supplier→Supplier, promosi/iklan→Iklan AI, catat/keuangan→Laporan.
+
+---
+
+## 6. Modul Dashboard (`BSya UMKM`) — Web
+
+Sidebar: Dashboard, Laporan Keuangan, Pajak AI (badge 1), Supplier & Customer, Iklan AI, Permodalan. Topbar: search, *Tanya AI*, notifikasi, avatar + nama (dari profil).
+
+| Halaman | Isi | Sumber data |
 |---|---|---|
-| Welcome | Sapaan "Halo! Saya BSya AI 👋" | Estimasi "2 menit · 8 pertanyaan", tombol *Mulai kenalan* |
-| Branch Select | "Posisi bisnismu saat ini?" | Pilih salah satu dari 3 cabang |
-| Questions | Pertanyaan per cabang | 8–10 pertanyaan, ada progress bar |
-| Summary | "Selesai! Profilmu sudah siap." | Kartu profil + CTA rekomendasi → tombol *Buka Dashboard* |
-
-### 4.2 Tiga Cabang
-| Kode | Label | Sub-keterangan | Jumlah Pertanyaan |
-|---|---|---|---|
-| **A** | Bisnis sudah jalan | Sudah > 3 bulan dengan pelanggan rutin | 10 |
-| **C** | Baru mulai banget | Kurang dari 3 bulan, masih cari ritme | 8 |
-| **B** | Masih sebatas ide | Belum jualan, baru riset & rencana | 10 |
-
-### 4.3 Tipe Pertanyaan
-Setiap pertanyaan punya: `id`, teks pertanyaan (`q`), sub-teks opsional (`sub`), pesan AI (`ai`), dan `type`:
-- `single` — pilih satu opsi (radio).
-- `multi` — pilih banyak opsi (checkbox).
-- `text` — input teks bebas.
-- `text-chips` — input teks + pilih satu chip kategori.
-
-### 4.4 Daftar Pertanyaan (data konten)
-
-**Cabang A — Sudah jalan (10 pertanyaan):**
-1. `a1` Apa nama usahamu? *(text-chips: Warung/Kelontong, F&B/Kuliner, Online Seller, Fashion, Jasa, Manufaktur kecil, Lainnya)*
-2. `a2` Sudah jalan berapa lama? *(single: <1th, 1–3th, 3–5th, >5th)*
-3. `a3` Lokasi usahamu di kota mana? *(text)*
-4. `a4` Rata-rata omzet sebulan? *(single: <Rp5jt, Rp5–20jt, Rp20–50jt, Rp50–200jt, >Rp200jt)*
-5. `a5` Ada yang bantu kerja? *(single: Sendiri, 1–3 org, 4–10 org, >10 org)*
-6. `a6` Sudah punya NPWP? *(single: Sudah, Belum, Mau dibantu daftarkan)*
-7. `a7` Catat keuangan pakai apa? *(single: Buku tulis, Spreadsheet, Aplikasi lain, Belum pernah)*
-8. `a8` Belanja stok di mana? *(single: 1 supplier tetap, Beberapa, Pasar/grosir, Marketplace, Campuran)*
-9. `a9` Jualan paling laris lewat mana? *(single: Toko fisik, Marketplace, Sosmed/WA, Ojek online, Gabungan)*
-10. `a10` Apa yang paling kamu butuhkan dari BSya? *(multi: Catat keuangan, Tambah modal, Hemat supplier, Promosi/iklan, Bayar pajak)*
-
-**Cabang B — Masih ide (10 pertanyaan):** `b1`–`b10` (ide bisnis, kapan mulai, lokasi, modal awal, sumber modal, supplier, target pelanggan, pengalaman jualan, harapan balik modal, bantuan paling penting).
-
-**Cabang C — Baru mulai <3 bulan (8 pertanyaan):** `c1`–`c8` (nama usaha, sejak kapan, lokasi & cara jualan, omzet bulan pertama, sumber modal awal, tantangan terbesar, pelanggan tetap, kebutuhan dari BSya).
-
-> Konten lengkap tiap opsi pertanyaan dapat diambil verbatim dari mockup `BSya_Onboarding` (objek `Q_BRANCH_A`, `Q_BRANCH_B`, `Q_BRANCH_C`).
-
-### 4.5 Layar Summary
-- Tampilkan kartu **Profil Bisnismu**: nama usaha, jenis (chip), label cabang.
-- Hitung **CTA rekomendasi (maks 3)** dari jawaban pertanyaan terakhir (multi-select kebutuhan):
-  - butuh "modal" → "Cek plafon modal" (Permodalan)
-  - butuh "pajak" → "Lihat estimasi pajak" (Pajak AI)
-  - butuh "supplier" → "Cari supplier hemat" (Supplier)
-  - butuh "promosi/iklan" → "Bikin iklan AI" (Iklan AI)
-  - butuh "catat/keuangan" → "Mulai catat keuangan" (Laporan)
-- Tombol **Buka Dashboard** → simpan profil → redirect ke dashboard.
+| Dashboard | greeting, 4 KPI, arus kas 6 bln (chart), AI Insight, quick actions, transaksi | `/api/dashboard/summary` + `/api/ai/insight` |
+| Laporan Keuangan | tab (Laba Rugi/Neraca/Arus Kas/SAK EMKM), 3 ringkasan, bar chart, rincian akun | `/api/dashboard/laporan` |
+| Pajak AI | tagihan PPh Final 0.5%, **Asisten Pajak (LLM)**, riwayat | `/api/dashboard/pajak` + `/api/ai/pajak` |
+| Supplier & Customer | daftar supplier, AI Match card, top customer | `/api/dashboard/supplier` |
+| Iklan AI | generator iklan (LLM), KPI, kampanye | `/api/dashboard/iklan` + `/api/ai/iklan` |
+| Permodalan | plafon, skor kelayakan (gauge + breakdown), 3 paket | `/api/dashboard/modal` |
 
 ---
 
-## 5. Modul Dashboard (dari `BSya_UMKM`)
+## 7. API Backend (Go + Gin)
 
-### 5.1 Navigasi Web (Sidebar)
-| ID | Label | Badge |
+Prefix `/api`. Auth mock → semua request memakai user `demo` (override via header `X-User-Id`).
+
+| Method | Path | Fungsi |
 |---|---|---|
-| `dashboard` | Dashboard | — |
-| `laporan` | Laporan Keuangan | — |
-| `pajak` | Pajak AI | 1 |
-| `supplier` | Supplier & Customer | — |
-| `iklan` | Iklan AI | — |
-| `modal` | Permodalan | — |
-
-**Topbar:** search bar ("Cari transaksi, supplier, faktur…"), tombol *Tanya AI*, lonceng notifikasi, avatar + nama user ("Budi Santoso" / "Warung Sembako Berkah").
-
-### 5.2 Halaman: Dashboard (Home)
-- **Greeting banner** — sapaan personal + tanggal + ringkasan AI ("AI BSya sudah merangkum 47 transaksi…").
-- **KPI Row (4 kartu)** — Pemasukan bulan ini, Pengeluaran, Saldo Rekening, Estimasi Pajak (dengan delta %).
-- **Cashflow Card** — grafik garis arus kas 6 bulan (Pemasukan vs Pengeluaran).
-- **AI Insight Card** — insight dari AI (mis. "Pengeluaran sembako naik 18%…") + CTA.
-- **Quick Actions** — Catat Transaksi, Hitung Pajak, Cari Supplier, Buat Iklan.
-- **Recent Transactions** — daftar transaksi terbaru (nama, kategori, nominal, waktu).
-
-### 5.3 Halaman: Laporan Keuangan
-- Tab segmented: Laba Rugi, Neraca, Arus Kas, SAK EMKM + tombol *Unduh PDF*.
-- 3 kartu ringkasan: Total Pendapatan, Total Beban, Laba Bersih (+ margin).
-- Bar chart Laba Bersih per bulan.
-- Rincian akun (penjualan, HPP, beban gaji, listrik, dll).
-
-### 5.4 Halaman: Pajak AI *(melibatkan LLM)*
-- Kartu tagihan pajak bulan berjalan (PPh Final 0.5%, omzet, jatuh tempo) + tombol Bayar/Unduh SSP.
-- **Asisten Pajak** — daftar tips/insight yang **digenerate LLM** berdasarkan profil & omzet.
-- Riwayat pajak per bulan (Lunas / Belum bayar).
-
-### 5.5 Halaman: Supplier & Customer *(melibatkan LLM)*
-- Daftar supplier aktif (nama, kategori, lokasi, rating, order terakhir, tag).
-- **AI Match card** — rekomendasi supplier baru hasil LLM ("3 supplier baru di Bekasi cocok untukmu…").
-- Top customer bulan ini.
-
-### 5.6 Halaman: Iklan AI *(melibatkan LLM)*
-- Hero "Buat Iklan dengan AI" — input deskripsi produk → **LLM generate teks & konsep visual iklan**.
-- KPI: Total reach, clicks, pengeluaran, ROAS.
-- Daftar kampanye aktif.
-
-### 5.7 Halaman: Permodalan
-- Kartu plafon pre-approved (nominal, margin, tenor, akad murabahah).
-- **Skor Kelayakan Bisnis** (gauge + breakdown: konsistensi pendapatan, riwayat pajak, pertumbuhan omzet, diversifikasi supplier).
-- 3 paket: Modal Cepat, Modal Tumbuh (popular), Modal Investasi.
-
-### 5.8 Tampilan Mobile (bottom-tab)
-Tab: **Home, Keuangan, Pajak, Iklan, Profil**. Konten ringkas dari modul web masing-masing. Halaman Profil berisi data usaha, rekening terhubung, pengaturan, dan logout.
+| GET | `/health` | status (db & ai configured) |
+| POST | `/api/auth/login` | mock login, balas `{userId, name}` |
+| GET | `/api/profile` | ambil profil (404 jika belum ada) |
+| POST | `/api/profile` | simpan/upsert `BusinessProfile` |
+| GET | `/api/dashboard/:section` | section: summary·laporan·pajak·supplier·iklan·modal |
+| POST | `/api/ai/insight` | insight keuangan (JSON `{title, body}`) |
+| POST | `/api/ai/pajak` | 3 tips pajak (`{tips: string[]}`) |
+| POST | `/api/ai/iklan` | generate materi iklan (`{text, source}`) |
+| POST | `/api/ai/chat` | asisten umum (`{text, source}`) |
 
 ---
 
-## 6. Integrasi LLM (Amazon Bedrock)
+## 8. Model Data (PostgreSQL)
 
-LLM diakses **server-side** lewat Next.js Route Handler (`app/api/ai/.../route.ts`) menggunakan AWS SDK for JavaScript v3 (`@aws-sdk/client-bedrock-runtime`).
+- **users** `(id, name, email, created_at)`
+- **business_profiles** `(user_id PK→users, branch, business_name, category, needs JSONB, answers JSONB, completed_at)`
+- **dashboard_data** `(user_id, section, data JSONB, PK(user_id, section))` — tiap section dashboard disimpan sebagai blob JSONB; di-seed dari dataset demo.
 
-### 6.1 Use Case LLM
-| Fitur | Lokasi | Fungsi LLM |
-|---|---|---|
-| Onboarding AI | Onboarding | Pesan AI kontekstual + ringkasan profil & rekomendasi modul |
-| AI Insight | Dashboard Home | Insight keuangan dari data mock |
-| Asisten Pajak | Pajak AI | Tips/penjelasan pajak berdasarkan profil & omzet |
-| AI Supplier Match | Supplier | Rekomendasi supplier hemat |
-| Generate Iklan | Iklan AI | Generate teks & konsep materi iklan dari deskripsi produk |
-| Tanya AI | Topbar (global) | Chat asisten umum |
+Migrasi (`internal/store/schema.sql`) + seed (user `demo` "Budi Santoso" + 6 section) dijalankan otomatis saat backend connect ke Postgres (idempotent).
 
-### 6.2 Konfigurasi (Environment Variables)
-```
-AWS_REGION=...
-AWS_ACCESS_KEY_ID=...
-AWS_SECRET_ACCESS_KEY=...
-BEDROCK_MODEL_ID=...        # mis. anthropic.claude-3-5-sonnet-... atau model Bedrock lain
-```
-> Semua kredensial AWS **hanya di server** (`.env.local`), tidak pernah dikirim ke client. Sediakan `.env.example`.
-
-### 6.3 Catatan Implementasi
-- Route handler menerima prompt + konteks (profil onboarding, data mock), memanggil Bedrock, mengembalikan teks.
-- Untuk fitur UX yang lebih baik, dukung **streaming** respons bila memungkinkan.
-- Sediakan fallback (mock response) bila kredensial Bedrock belum di-set, agar prototype tetap jalan tanpa AWS.
-
----
-
-## 7. Model Data (Mock / In-Memory)
-
-### 7.1 Profil Bisnis (hasil onboarding)
 ```ts
+// BusinessProfile (frontend & backend sepakat)
 type BusinessProfile = {
   branch: "A" | "B" | "C";
-  businessName: string;        // dari pertanyaan nama (a1/b1/c1)
-  category: string;            // chip jenis usaha
-  location?: string;
-  monthlyRevenueRange?: string;
-  employees?: string;
-  hasNpwp?: string;
-  needs: string[];             // multi-select kebutuhan
-  answers: Record<string, any>; // semua jawaban mentah per id pertanyaan
+  businessName: string;
+  category: string;
+  needs: string[];
+  answers: Record<string, any>;
   completedAt: string;
 };
 ```
 
-### 7.2 Data Dashboard (mock)
-Sediakan dataset mock untuk: KPI, arus kas 6 bulan, transaksi, laporan keuangan, riwayat pajak, supplier, customer, kampanye iklan, paket modal, skor kelayakan. Nilai default bisa mengikuti angka dari mockup (mis. nasabah contoh "Budi Santoso — Warung Sembako Berkah"). Saat memungkinkan, sebagian field (nama usaha, kategori, lokasi) **diisi dari `BusinessProfile`**.
+---
+
+## 9. Integrasi LLM (Amazon Bedrock) — di Backend Go
+
+`internal/ai/bedrock.go` memakai `aws-sdk-go-v2`. Memanggil Anthropic Messages API di Bedrock (`anthropic_version: bedrock-2023-05-31`). Konteks prompt diisi dari `BusinessProfile`. Jika kredensial kosong/err → **mock**.
+
+Env: `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `BEDROCK_MODEL_ID`.
 
 ---
 
-## 8. Theming (dari mockup)
+## 10. Theming (dari mockup)
 
-- Font utama: **Nunito** (Google Fonts).
-- Palet "Sunny" (default): sky `#29B5E8`, skyDeep `#0E92C2`, skySoft `#E8F7FD`, yellow `#FFD93D`, yellowDeep `#F5B800`.
-- Warna teks: ink `#0B2740`, ink2 `#36506B`, muted `#7A8FA3`, line `#E4EEF5`, bg `#F4FAFD`, ok `#22B57A`.
-- Logo: kotak "smiley" (mata kotak + senyum) warna sky dengan aksen kuning.
-- Gaya: rounded corner besar, kartu putih, gradient sky/yellow, dekorasi segitiga kuning.
-
-> Mockup juga punya beberapa tema alternatif (Mint, Coral, Royal) & vibe (Playful/Balanced/Corporate) — ini **opsional**, boleh diabaikan untuk prototype.
+- Font **Nunito**. Palet "Sunny": sky `#29B5E8`, skyDeep `#0E92C2`, skySoft `#E8F7FD`, yellow `#FFD93D`, yellowDeep `#F5B800`; teks ink `#0B2740`, ink2 `#36506B`, muted `#7A8FA3`, line `#E4EEF5`, bg `#F4FAFD`, ok `#22B57A`.
+- Logo "smiley" kotak, kartu rounded, gradient sky/yellow, dekorasi segitiga kuning (vibe Playful).
+- Tema alternatif (Mint/Coral/Royal) & vibe (Balanced/Corporate) dari mockup **diabaikan** untuk prototype.
 
 ---
 
-## 9. Struktur Proyek (Usulan)
+## 11. Menjalankan & Deploy
 
-```
-bsya-umkm/
-├── app/
-│   ├── layout.tsx
-│   ├── page.tsx                 # redirect: login / dashboard
-│   ├── login/page.tsx
-│   ├── onboarding/page.tsx      # alur onboarding (welcome→branch→Q→summary)
-│   ├── dashboard/
-│   │   ├── layout.tsx           # sidebar + topbar
-│   │   ├── page.tsx             # Dashboard Home
-│   │   ├── laporan/page.tsx
-│   │   ├── pajak/page.tsx
-│   │   ├── supplier/page.tsx
-│   │   ├── iklan/page.tsx
-│   │   └── modal/page.tsx
-│   └── api/
-│       └── ai/
-│           ├── insight/route.ts
-│           ├── pajak/route.ts
-│           ├── supplier/route.ts
-│           ├── iklan/route.ts
-│           └── chat/route.ts
-├── components/                  # Mark, Deco, Chip, ProgressBar, KPI cards, dll
-├── lib/
-│   ├── bedrock.ts               # client Amazon Bedrock
-│   ├── profile.ts               # baca/tulis BusinessProfile (localStorage)
-│   └── mock-data.ts             # dataset dashboard
-├── data/questions.ts            # Q_BRANCH_A/B/C
-├── public/
-├── .env.example
-├── Dockerfile
-├── docker-compose.yml
-├── next.config.ts
-└── package.json
+### 11.1 Lokal (Docker Compose)
+```bash
+docker compose up --build
+# frontend → http://localhost:3000, backend → http://localhost:8080, db → :5432
 ```
 
-> Catatan: prototype ini menampilkan web dashboard sebagai aplikasi utama. Tampilan mobile bisa dibuat sebagai layout responsif atau route terpisah, sesuai kebutuhan.
+### 11.2 Lokal (tanpa Docker)
+```bash
+# backend (in-memory, tanpa Postgres)
+cd backend && go run ./cmd/server          # :8080
+# frontend
+cd frontend && npm install && npm run dev   # :3000 (set NEXT_PUBLIC_API_URL=http://localhost:8080)
+```
+
+### 11.3 Railway
+- **Service Postgres** (plugin) → menyediakan `DATABASE_URL`.
+- **Service backend**: root `backend/`, Dockerfile builder. Env: `DATABASE_URL` (reference Postgres), `ALLOWED_ORIGINS` (URL frontend), opsional kredensial Bedrock. Healthcheck `/health`.
+- **Service frontend**: root `frontend/`, Dockerfile builder. Env: `NEXT_PUBLIC_API_URL` = URL publik backend.
+- Catatan: Railway meng-inject `PORT`; backend & frontend sudah membacanya.
 
 ---
 
-## 10. Docker
+## 12. Kriteria Selesai (Acceptance Criteria)
 
-### 10.1 Ketersediaan Port
-- Next.js default berjalan di **port `3000`**.
-- Hasil pengecekan port pada lingkungan kerja: **3000, 3001, 8080, 8000, 5173, 4000, 9000 — semuanya bebas**.
-- Rencana: map `host:3000 → container:3000`. **Sebelum `docker compose up`, cek di mesin host** apakah 3000 sudah dipakai:
-  - Linux/macOS: `lsof -i :3000` atau `ss -tlnp | grep 3000`
-  - Windows: `netstat -ano | findstr :3000`
-  - Jika terpakai, ganti ke 3001 (`3001:3000`).
-
-### 10.2 Dockerfile (garis besar)
-- Base image: `node:20-alpine` (memenuhi Node 20.9+).
-- Multi-stage: `deps` → `builder` (`next build`) → `runner` (`next start`).
-- Disarankan `output: "standalone"` di `next.config.ts` agar image runner ramping.
-- Expose port 3000.
-
-### 10.3 docker-compose.yml (garis besar)
-- 1 service: `web` (Next.js).
-- `ports: ["3000:3000"]`.
-- `env_file: .env.local` untuk kredensial Bedrock.
-- Untuk dev: mount volume + `next dev` (Turbopack); untuk demo: build production.
-- Tidak ada service database (sesuai keputusan tanpa DB).
-
----
-
-## 11. Kriteria Selesai (Acceptance Criteria)
-
-1. `docker compose up` menjalankan aplikasi di `http://localhost:3000`.
+1. `docker compose up` menjalankan frontend (3000), backend (8080), Postgres.
 2. User belum onboarding → diarahkan ke onboarding; sudah → ke dashboard.
-3. Onboarding mendukung 3 cabang dengan jumlah & tipe pertanyaan sesuai spesifikasi.
-4. Layar summary menampilkan profil + CTA rekomendasi berdasarkan jawaban.
-5. Setelah onboarding, dashboard menampilkan nama usaha/kategori/lokasi dari profil.
-6. Keenam halaman dashboard tampil sesuai mockup dengan data mock.
-7. Minimal satu fitur AI memanggil Amazon Bedrock server-side dan menampilkan hasilnya (dengan fallback mock bila kredensial belum ada).
-8. Tampilan mengikuti theming (warna sky/yellow, font Nunito, gaya kartu rounded).
+3. Onboarding 3 cabang dengan jumlah & tipe pertanyaan sesuai spesifikasi; summary menampilkan profil + CTA.
+4. Profil onboarding tersimpan ke Postgres lewat backend; dashboard membaca data dari backend.
+5. Keenam halaman dashboard tampil sesuai mockup.
+6. Minimal satu fitur AI memanggil Bedrock dari backend (dengan fallback mock bila kredensial belum ada).
+7. Tema mengikuti palet Sunny + Nunito + kartu rounded.
+8. Backend `go build ./...` sukses; frontend `npm run build` sukses.
 
 ---
 
-## 12. Pertanyaan Terbuka / Asumsi
+## 13. Pertanyaan Terbuka / Langkah Berikutnya
 
-- **Login**: diasumsikan disimulasikan (tanpa server auth). Perlu dikonfirmasi apakah cukup tombol "Masuk" dummy.
-- **Reset onboarding**: sediakan cara reset (clear `localStorage`) untuk demo first-login berulang.
-- **Model Bedrock**: `BEDROCK_MODEL_ID` final menunggu keputusan (Claude di Bedrock direkomendasikan).
-- **Mobile vs Web**: untuk fase ini, prioritas pada web dashboard; mobile bisa menyusul.
+- **Auth sungguhan** (JWT + tabel users/password) menggantikan mock.
+- **Dashboard pages → fetch penuh dari backend**: endpoint `/api/dashboard/:section` sudah ada & berisi data demo, tapi halaman web saat ini masih render data yang ter-hardcode di komponen. Migrasi bertahap ke `getSection()` di `lib/api.ts`.
+- **Tampilan mobile** (bottom-tab) sesuai mockup.
+- Normalisasi data dashboard dari JSONB blob menjadi tabel granular bila perlu query/agregasi.
+- `BEDROCK_MODEL_ID` final (Claude di Bedrock direkomendasikan).

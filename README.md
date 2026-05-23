@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BSya UMKM+
 
-## Getting Started
+Super app UMKM dari BCA Syariah — keuangan, pajak, supplier, iklan & permodalan dibantu AI.
 
-First, run the development server:
+Monorepo full-stack:
+
+| Folder | Stack | Port |
+|---|---|---|
+| [`frontend/`](frontend) | Next.js 16 + React 19 + TypeScript | 3000 |
+| [`backend/`](backend) | Go 1.26 + Gin + pgx | 8080 |
+| (Postgres) | PostgreSQL 16 | 5432 |
+
+Spesifikasi lengkap: [`docs/requirements.md`](docs/requirements.md).
+
+## Jalankan lokal (Docker Compose)
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker compose up --build
+# frontend http://localhost:3000 · backend http://localhost:8080 · db :5432
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Jalankan lokal (tanpa Docker)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Backend — tanpa DATABASE_URL ia pakai data demo in-memory
+cd backend && go run ./cmd/server
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Frontend — set base URL backend
+cd frontend && npm install && \
+  NEXT_PUBLIC_API_URL=http://localhost:8080 npm run dev
+```
 
-## Learn More
+Tanpa kredensial Amazon Bedrock, endpoint AI otomatis memakai respons mock — app tetap jalan.
 
-To learn more about Next.js, take a look at the following resources:
+## Deploy (Railway)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Tiga service: Postgres (plugin), `backend/`, dan `frontend/` — masing-masing pakai Dockerfile + `railway.json`. Lihat §11.3 di requirements.

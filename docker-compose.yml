@@ -1,0 +1,46 @@
+# Local full-stack dev: Postgres + Go backend + Next.js frontend.
+# Mirrors the Railway topology (separate frontend & backend services + Postgres plugin).
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: bsya
+      POSTGRES_PASSWORD: bsya
+      POSTGRES_DB: bsya
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bsya"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    environment:
+      PORT: "8080"
+      DATABASE_URL: "postgres://bsya:bsya@db:5432/bsya?sslmode=disable"
+      ALLOWED_ORIGINS: "http://localhost:3000"
+      # AWS_REGION / BEDROCK_MODEL_ID left empty → AI endpoints use mock responses.
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    environment:
+      # Server-side calls from Next to backend (inside the compose network).
+      BACKEND_URL: "http://backend:8080"
+      # Browser-side calls (host machine).
+      NEXT_PUBLIC_API_URL: "http://localhost:8080"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
