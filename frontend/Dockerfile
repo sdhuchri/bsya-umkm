@@ -25,4 +25,7 @@ COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
 EXPOSE 3000
 ENV PORT=3000
+# Bind to all interfaces so Railway/Docker can reach the standalone server
+# (Next defaults to localhost otherwise → 502 Bad Gateway).
+ENV HOSTNAME=0.0.0.0
 CMD ["node", "server.js"]
