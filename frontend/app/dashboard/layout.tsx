@@ -21,6 +21,7 @@ const NAV = [
   { href: "/dashboard/supplier", ic: "users", label: "Supplier & Customer", short: "Supplier" },
   { href: "/dashboard/iklan", ic: "megaphone", label: "Iklan AI", short: "Iklan" },
   { href: "/dashboard/modal", ic: "wallet", label: "Permodalan", short: "Modal" },
+  { href: "/dashboard/connector", ic: "plug", label: "Connector", short: "Connector" },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
