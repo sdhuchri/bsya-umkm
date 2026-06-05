@@ -22,6 +22,7 @@ const NAV = [
   { href: "/dashboard/iklan", ic: "megaphone", label: "Iklan AI", short: "Iklan" },
   { href: "/dashboard/modal", ic: "wallet", label: "Permodalan", short: "Modal" },
   { href: "/dashboard/connector", ic: "plug", label: "Connector", short: "Connector" },
+  { href: "/dashboard/whatsapp", ic: "whatsapp", label: "Asisten WhatsApp", short: "WA Bot" },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -184,11 +185,12 @@ function MobileHeader({ onAskAI }: { onAskAI: () => void }) {
 function BottomNav() {
   const pathname = usePathname();
   return (
-    <nav style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 20, background: C.white, borderTop: `1px solid ${C.line}`, padding: "8px 4px calc(8px + env(safe-area-inset-bottom))", display: "flex", justifyContent: "space-around" }}>
+    <nav className="bsya-bottomnav" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 20, background: C.white, borderTop: `1px solid ${C.line}`, padding: "8px 6px calc(8px + env(safe-area-inset-bottom))", display: "flex", gap: 2, overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}>
+      <style>{`.bsya-bottomnav::-webkit-scrollbar{display:none}`}</style>
       {NAV.map((it) => {
         const active = it.href === "/dashboard" ? pathname === it.href : pathname.startsWith(it.href);
         return (
-          <Link key={it.href} href={it.href} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, color: active ? C.skyDeep : C.muted, position: "relative", minWidth: 0 }}>
+          <Link key={it.href} href={it.href} style={{ flex: "1 0 auto", minWidth: 58, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, color: active ? C.skyDeep : C.muted, position: "relative" }}>
             {Ic[it.ic](21, active ? C.skyDeep : C.muted)}
             <span style={{ fontSize: 9.5, fontWeight: active ? 800 : 600, whiteSpace: "nowrap" }}>{it.short}</span>
             {it.badge && <span style={{ position: "absolute", top: -3, right: "50%", marginRight: -16, background: C.yellow, color: C.ink, fontSize: 8, fontWeight: 800, padding: "1px 5px", borderRadius: 999 }}>{it.badge}</span>}

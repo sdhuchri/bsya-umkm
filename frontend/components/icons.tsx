@@ -102,4 +102,10 @@ export const Ic: Record<string, IconFn> = {
       <path d="M12 16v6" />
     </svg>
   ),
+  whatsapp: (s = 18, c = "currentColor") => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 21l1.6-4.2A8 8 0 1 1 8 19.4L3 21z" />
+      <path d="M9 9.5c0 3 2.5 5.5 5.5 5.5M9 9.5c0-.8.4-1.2 1-1.2.4 0 .7.8 1 1.4.2.5-.6.9-.8 1.3M14.5 15c.8 0 1.2-.4 1.2-1 0-.4-.8-.7-1.4-1-.5-.2-.9.6-1.3.8" />
+    </svg>
+  ),
 };
