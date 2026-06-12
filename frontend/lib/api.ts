@@ -1,7 +1,19 @@
 // Client for the Go (Gin) backend. Browser calls use NEXT_PUBLIC_API_URL.
 import type { BusinessProfile } from "@/types";
 
-export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8082";
+// Normalize the configured base URL. A bare host (e.g. "api.up.railway.app")
+// without a scheme would otherwise be treated as a *relative* URL by the
+// browser and resolve against the current page → wrong request, 404.
+function normalizeBase(raw: string | undefined): string {
+  const v = (raw || "").trim().replace(/\/+$/, "");
+  if (!v) return "http://localhost:8082";
+  if (/^https?:\/\//i.test(v)) return v; // already has scheme
+  if (v.startsWith("//")) return "https:" + v;
+  if (v.startsWith("localhost") || v.startsWith("127.0.0.1")) return "http://" + v;
+  return "https://" + v; // bare host → assume https
+}
+
+export const API_BASE = normalizeBase(process.env.NEXT_PUBLIC_API_URL);
 
 async function post<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
