@@ -36,7 +36,7 @@ func main() {
 	h := handlers.New(st, aiClient)
 	r := router.New(h, cfg.AllowedOrigins)
 
-	log.Printf("BSya UMKM+ backend listening on :%s", cfg.Port)
+	log.Printf("BSya Grow backend listening on :%s", cfg.Port)
 	if err := r.Run(":" + cfg.Port); err != nil {
 		log.Fatalf("server error: %v", err)
 	}

@@ -1,7 +1,7 @@
 // Client for the Go (Gin) backend. Browser calls use NEXT_PUBLIC_API_URL.
 import type { BusinessProfile } from "@/types";
 
-export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8082";
 
 async function post<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {

@@ -11,6 +11,6 @@ FROM alpine:3.20
 RUN apk add --no-cache ca-certificates
 WORKDIR /app
 COPY --from=build /out/server /app/server
-ENV PORT=8080
-EXPOSE 8080
+ENV PORT=8082
+EXPOSE 8082
 CMD ["/app/server"]

@@ -1,46 +1,52 @@
-# Local full-stack dev: Postgres + Go backend + Next.js frontend.
-# Mirrors the Railway topology (separate frontend & backend services + Postgres plugin).
-services:
-  db:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_USER: bsya
-      POSTGRES_PASSWORD: bsya
-      POSTGRES_DB: bsya
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U bsya"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+# Local full-stack dev. Reuses the existing shared PostgreSQL (container
+# "nalarx-dashboard" on network "nalarx_default", database "bsya") instead of
+# starting its own Postgres — no second Postgres container is created.
+#
+# Host ports are chosen to avoid conflicts with other apps already running on
+# this machine (3000 → nalarx-web, 3100 → onyx-nginx, 8080 → local server):
+#   frontend → http://localhost:3002
+#   backend  → http://localhost:8082
+#
+# Usage:  docker compose up --build -d
+name: bsya-umkm
 
+services:
   backend:
     build: ./backend
+    container_name: bsya-backend
     environment:
-      PORT: "8080"
-      DATABASE_URL: "postgres://bsya:bsya@db:5432/bsya?sslmode=disable"
-      ALLOWED_ORIGINS: "http://localhost:3000"
+      PORT: "8082"
+      # Shared Postgres reached by container name over the nalarx network.
+      DATABASE_URL: "postgres://nalarx:nalarx_secret@nalarx-dashboard:5432/bsya?sslmode=disable"
+      ALLOWED_ORIGINS: "http://localhost:3002"
       # AWS_REGION / BEDROCK_MODEL_ID left empty → AI endpoints use mock responses.
     ports:
-      - "8080:8080"
-    depends_on:
-      db:
-        condition: service_healthy
+      - "8082:8082"
+    networks:
+      - shared
+    restart: unless-stopped
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        # NEXT_PUBLIC_* is inlined into the browser bundle at build time.
+        NEXT_PUBLIC_API_URL: "http://localhost:8082"
+    container_name: bsya-frontend
     environment:
       # Server-side calls from Next to backend (inside the compose network).
-      BACKEND_URL: "http://backend:8080"
-      # Browser-side calls (host machine).
-      NEXT_PUBLIC_API_URL: "http://localhost:8080"
+      BACKEND_URL: "http://backend:8082"
+      NEXT_PUBLIC_API_URL: "http://localhost:8082"
     ports:
-      - "3000:3000"
+      - "3002:3002"
     depends_on:
       - backend
+    networks:
+      - shared
+    restart: unless-stopped
 
-volumes:
-  pgdata:
+networks:
+  # The pre-existing network created by the shared stack (holds nalarx-dashboard).
+  shared:
+    external: true
+    name: nalarx_default

@@ -9,7 +9,7 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
-  title: "BSya UMKM+ · Super App",
+  title: "BSya Grow · Super App",
   description: "Super app UMKM dari BCA Syariah — keuangan, pajak, supplier, iklan & permodalan dibantu AI.",
 };
 

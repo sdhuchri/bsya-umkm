@@ -1,4 +1,4 @@
-// BSya UMKM+ theme — "Sunny" palette, "Playful" vibe (fixed for the real app).
+// BSya Grow theme — "Sunny" palette, "Playful" vibe (fixed for the real app).
 // Mirrors the prototype's ThemeCtx output so styling stays pixel-faithful.
 
 export const C = {

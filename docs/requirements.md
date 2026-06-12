@@ -1,12 +1,12 @@
-# BSya UMKM+ — Requirements (Prototype, Full-Stack)
+# BSya Grow — Requirements (Prototype, Full-Stack)
 
-> Dokumen kebutuhan untuk **BSya UMKM+** (Super App UMKM dari BCA Syariah). Disusun dari dua mockup desain (`BSya Onboarding (standalone).html`, `BSya UMKM (standalone).html`). Versi ini memakai arsitektur **full-stack**: frontend **Next.js** + backend **Go (Gin)** + **PostgreSQL**, dideploy ke **Railway**.
+> Dokumen kebutuhan untuk **BSya Grow** (Super App UMKM dari BCA Syariah). Disusun dari dua mockup desain (`BSya Onboarding (standalone).html`, `BSya UMKM (standalone).html`). Versi ini memakai arsitektur **full-stack**: frontend **Next.js** + backend **Go (Gin)** + **PostgreSQL**, dideploy ke **Railway**.
 
 ---
 
 ## 1. Ringkasan Produk
 
-BSya UMKM+ adalah "super app" untuk pelaku UMKM yang menggabungkan pencatatan keuangan, perpajakan, manajemen supplier/customer, periklanan, dan permodalan dalam satu tempat — dibantu AI.
+BSya Grow adalah "super app" untuk pelaku UMKM yang menggabungkan pencatatan keuangan, perpajakan, manajemen supplier/customer, periklanan, dan permodalan dalam satu tempat — dibantu AI.
 
 Alur utama prototype: **login → (jika pertama kali) onboarding AI → dashboard yang terisi berdasarkan jawaban onboarding.**
 
@@ -125,7 +125,7 @@ Jumlah pertanyaan: **A=10, B=10, C=8**. CTA mapping: modal→Permodalan, pajak�
 
 ---
 
-## 6. Modul Dashboard (`BSya UMKM`) — Web
+## 6. Modul Dashboard (`BSya Grow`) — Web
 
 Sidebar: Dashboard, Laporan Keuangan, Pajak AI (badge 1), Supplier & Customer, Iklan AI, Permodalan. Topbar: search, *Tanya AI*, notifikasi, avatar + nama (dari profil).
 
@@ -201,15 +201,15 @@ Env: `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `BEDROCK_MODEL_
 ### 11.1 Lokal (Docker Compose)
 ```bash
 docker compose up --build
-# frontend → http://localhost:3000, backend → http://localhost:8080, db → :5432
+# frontend → http://localhost:3002, backend → http://localhost:8082, db → :5432
 ```
 
 ### 11.2 Lokal (tanpa Docker)
 ```bash
 # backend (in-memory, tanpa Postgres)
-cd backend && go run ./cmd/server          # :8080
+cd backend && go run ./cmd/server          # :8082
 # frontend
-cd frontend && npm install && npm run dev   # :3000 (set NEXT_PUBLIC_API_URL=http://localhost:8080)
+cd frontend && npm install && npm run dev   # :3002 (set NEXT_PUBLIC_API_URL=http://localhost:8082)
 ```
 
 ### 11.3 Railway
@@ -222,7 +222,7 @@ cd frontend && npm install && npm run dev   # :3000 (set NEXT_PUBLIC_API_URL=htt
 
 ## 12. Kriteria Selesai (Acceptance Criteria)
 
-1. `docker compose up` menjalankan frontend (3000), backend (8080), Postgres.
+1. `docker compose up` menjalankan frontend (3002), backend (8082), Postgres.
 2. User belum onboarding → diarahkan ke onboarding; sudah → ke dashboard.
 3. Onboarding 3 cabang dengan jumlah & tipe pertanyaan sesuai spesifikasi; summary menampilkan profil + CTA.
 4. Profil onboarding tersimpan ke Postgres lewat backend; dashboard membaca data dari backend.

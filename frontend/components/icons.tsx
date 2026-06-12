@@ -95,4 +95,46 @@ export const Ic: Record<string, IconFn> = {
       <path d="M4 21c0-4 4-7 8-7s8 3 8 7" />
     </svg>
   ),
+  plug: (s = 18, c = "currentColor") => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 2v6M15 2v6" />
+      <path d="M6 8h12v3a6 6 0 0 1-12 0V8z" />
+      <path d="M12 17v5" />
+    </svg>
+  ),
+  whatsapp: (s = 18, c = "currentColor") => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 21l1.7-4A8.5 8.5 0 1 1 7 19.3L3 21z" />
+      <path d="M9 8.6c-.3 1 .2 2.4 1.4 3.6s2.6 1.7 3.6 1.4l1-1.4-1.8-1-.8.7c-.6-.3-1.2-.9-1.5-1.5l.7-.8-1-1.8-1.6.8z" />
+    </svg>
+  ),
+  upload: (s = 18, c = "currentColor") => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 16V4" />
+      <path d="M7 9l5-5 5 5" />
+      <path d="M4 16v4h16v-4" />
+    </svg>
+  ),
+  refresh: (s = 18, c = "currentColor") => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 12a9 9 0 0 1 15-6.7L21 7" />
+      <path d="M21 4v3h-3" />
+      <path d="M21 12a9 9 0 0 1-15 6.7L3 17" />
+      <path d="M3 20v-3h3" />
+    </svg>
+  ),
+  link: (s = 18, c = "currentColor") => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 15l6-6" />
+      <path d="M11 6l1-1a4 4 0 0 1 6 6l-1 1" />
+      <path d="M13 18l-1 1a4 4 0 0 1-6-6l1-1" />
+    </svg>
+  ),
+  doc: (s = 18, c = "currentColor") => (
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 2h8l4 4v16H6z" />
+      <path d="M14 2v4h4" />
+      <path d="M9 13h6M9 17h6" />
+    </svg>
+  ),
 };

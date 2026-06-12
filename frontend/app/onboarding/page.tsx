@@ -9,6 +9,8 @@ import type { Answer, Branch, BusinessProfile, Question } from "@/types";
 import { getProfile, isLoggedIn, saveProfile } from "@/lib/profile";
 import { saveProfileRemote } from "@/lib/api";
 import { useIsMobile } from "@/lib/useIsMobile";
+import { Sparkles } from "@/components/ui/sparkles";
+import { TextGenerate } from "@/components/ui/text-generate";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -42,7 +44,7 @@ export default function OnboardingPage() {
           <Mark size={m ? 38 : 48} />
           <div>
             <div style={{ fontSize: m ? 16 : 20, fontWeight: 900, letterSpacing: -0.4, lineHeight: 1 }}>
-              BSya UMKM<span style={{ color: C.yellow }}>+</span> · Onboarding
+              BSya <span style={{ color: C.yellow }}>Grow</span> · Onboarding
             </div>
             <div style={{ fontSize: m ? 9.5 : 11, fontWeight: 700, opacity: 0.85, marginTop: 4, letterSpacing: 0.5 }}>FIRST-TIME LOGIN FLOW · AI AGENT</div>
           </div>
@@ -101,6 +103,7 @@ function BackgroundTriangles() {
 function DecorativePanel() {
   return (
     <div style={{ flex: "0 0 38%", background: `linear-gradient(160deg, ${C.sky}, ${C.skyDeep})`, color: C.white, padding: 36, display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
+      <Sparkles count={36} color="rgba(255,255,255,0.9)" />
       <Deco size={120} rotate={18} color={C.yellow} style={{ position: "absolute", right: -30, top: -40, opacity: 0.85 }} />
       <Deco size={40} rotate={-20} color="rgba(255,255,255,0.2)" style={{ position: "absolute", right: 100, top: 60 }} />
       <Deco size={26} rotate={45} color={C.yellow} style={{ position: "absolute", left: 40, bottom: 100, opacity: 0.6 }} />
@@ -109,7 +112,7 @@ function DecorativePanel() {
         <Mark size={40} />
         <div>
           <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: -0.3 }}>
-            BSya UMKM<span style={{ color: C.yellow }}>+</span>
+            BSya <span style={{ color: C.yellow }}>Grow</span>
           </div>
           <div style={{ fontSize: 10.5, fontWeight: 700, opacity: 0.85, letterSpacing: 0.4, marginTop: 2 }}>SUPER APP · POWERED BY AI</div>
         </div>
@@ -119,7 +122,9 @@ function DecorativePanel() {
         <div style={{ display: "inline-flex", alignItems: "center", gap: 6, alignSelf: "flex-start", padding: "5px 11px", background: "rgba(255,255,255,0.15)", backdropFilter: "blur(10px)", borderRadius: 999, fontSize: 10.5, fontWeight: 800, letterSpacing: 0.3, border: "1px solid rgba(255,255,255,0.25)", marginBottom: 18 }}>
           ✨ ONBOARDING AI
         </div>
-        <div style={{ fontSize: 32, fontWeight: 900, letterSpacing: -0.8, lineHeight: 1.1 }}>Yuk kenalan dengan bisnismu.</div>
+        <div style={{ fontSize: 32, fontWeight: 900, letterSpacing: -0.8, lineHeight: 1.1 }}>
+          <TextGenerate words="Yuk kenalan dengan bisnismu." />
+        </div>
         <div style={{ fontSize: 14, opacity: 0.92, fontWeight: 600, marginTop: 14, lineHeight: 1.5 }}>
           Beberapa pertanyaan singkat untuk saya pahami kebutuhanmu — jawabannya langsung jadi pengaturan awal aplikasi.
         </div>

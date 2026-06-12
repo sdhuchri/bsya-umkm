@@ -1,4 +1,4 @@
-// Package data holds the canonical demo dataset for the BSya UMKM+ prototype.
+// Package data holds the canonical demo dataset for the BSya Grow prototype.
 // It is used to seed Postgres and as the in-memory fallback when no DB is configured.
 package data
 

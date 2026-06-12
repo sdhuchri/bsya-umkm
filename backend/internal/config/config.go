@@ -15,7 +15,7 @@ type Config struct {
 
 func Load() Config {
 	return Config{
-		Port:           env("PORT", "8080"),
+		Port:           env("PORT", "8082"),
 		DatabaseURL:    env("DATABASE_URL", ""),
 		AllowedOrigins: env("ALLOWED_ORIGINS", "*"),
 		AWSRegion:      env("AWS_REGION", ""),

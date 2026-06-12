@@ -10,6 +10,7 @@ import { aiInsight } from "@/lib/api";
 import { toast } from "@/lib/toast";
 import { Modal, PrimaryButton, fieldLabel, inputStyle } from "@/components/Modal";
 import { useIsMobile } from "@/lib/useIsMobile";
+import { Sparkles } from "@/components/ui/sparkles";
 
 type Tx = { name: string; cat: string; amt: string; time: string; neg: boolean };
 
@@ -97,6 +98,7 @@ function GreetingBanner() {
   const { ownerName } = useIdentity();
   return (
     <div style={{ borderRadius: r(18), padding: "20px 24px", position: "relative", overflow: "hidden", background: `linear-gradient(100deg, ${C.sky} 0%, ${C.skyDeep} 100%)`, color: C.white }}>
+      <Sparkles count={26} color="rgba(255,255,255,0.85)" />
       <Deco size={42} rotate={18} color="rgba(255,217,61,0.85)" style={{ position: "absolute", right: 28, top: 14 }} />
       <Deco size={22} rotate={-22} color="rgba(255,255,255,0.3)" style={{ position: "absolute", right: 90, bottom: 16 }} />
       <Deco size={14} rotate={45} color={C.yellow} style={{ position: "absolute", right: 200, top: 22 }} />

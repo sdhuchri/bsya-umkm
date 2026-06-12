@@ -21,7 +21,9 @@ const NAV = [
   { href: "/dashboard/supplier", ic: "users", label: "Supplier & Customer", short: "Supplier" },
   { href: "/dashboard/iklan", ic: "megaphone", label: "Iklan AI", short: "Iklan" },
   { href: "/dashboard/modal", ic: "wallet", label: "Permodalan", short: "Modal" },
-];
+  { href: "/dashboard/connector", ic: "plug", label: "Connector", short: "Connect", section: "Integrasi" },
+  { href: "/dashboard/whatsapp", ic: "whatsapp", label: "WhatsApp Bisnis", short: "WA" },
+] as { href: string; ic: string; label: string; short: string; badge?: string; section?: string }[];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -93,18 +95,24 @@ function Sidebar() {
       <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "4px 8px 18px" }}>
         <Mark size={32} />
         <div>
-          <div style={{ fontWeight: 800, fontSize: 16, letterSpacing: -0.2 }}>BSya UMKM+</div>
+          <div style={{ fontWeight: 800, fontSize: 16, letterSpacing: -0.2 }}>BSya Grow</div>
           <div style={{ fontSize: 10.5, color: C.muted, fontWeight: 600, letterSpacing: 0.4, textTransform: "uppercase" }}>Super App</div>
         </div>
       </div>
-      {NAV.map((it) => {
+      {NAV.map((it, i) => {
         const active = it.href === "/dashboard" ? pathname === it.href : pathname.startsWith(it.href);
+        const showSection = it.section && (i === 0 || NAV[i - 1].section !== it.section);
         return (
-          <Link key={it.href} href={it.href} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: r(12), cursor: "pointer", background: active ? C.sky : "transparent", color: active ? C.white : C.ink2, fontWeight: active ? 700 : 600, fontSize: 13.5, position: "relative", transition: "background 0.15s" }}>
-            {Ic[it.ic](18, active ? C.white : C.ink2)}
-            <span style={{ flex: 1 }}>{it.label}</span>
-            {it.badge && <span style={{ background: C.yellow, color: C.ink, fontSize: 10.5, fontWeight: 800, padding: "2px 7px", borderRadius: 999, minWidth: 18, textAlign: "center" }}>{it.badge}</span>}
-          </Link>
+          <React.Fragment key={it.href}>
+            {showSection && (
+              <div style={{ fontSize: 10, fontWeight: 800, color: C.muted, letterSpacing: 0.6, textTransform: "uppercase", padding: "14px 12px 6px" }}>{it.section}</div>
+            )}
+            <Link href={it.href} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: r(12), cursor: "pointer", background: active ? C.sky : "transparent", color: active ? C.white : C.ink2, fontWeight: active ? 700 : 600, fontSize: 13.5, position: "relative", transition: "background 0.15s" }}>
+              {Ic[it.ic](18, active ? C.white : C.ink2)}
+              <span style={{ flex: 1 }}>{it.label}</span>
+              {it.badge && <span style={{ background: C.yellow, color: C.ink, fontSize: 10.5, fontWeight: 800, padding: "2px 7px", borderRadius: 999, minWidth: 18, textAlign: "center" }}>{it.badge}</span>}
+            </Link>
+          </React.Fragment>
         );
       })}
       <div style={{ flex: 1 }} />
@@ -164,7 +172,7 @@ function MobileHeader({ onAskAI }: { onAskAI: () => void }) {
     <div style={{ height: 56, padding: "0 16px", display: "flex", alignItems: "center", gap: 10, borderBottom: `1px solid ${C.line}`, background: C.white, position: "sticky", top: 0, zIndex: 20 }}>
       <Mark size={30} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 900, letterSpacing: -0.2, lineHeight: 1 }}>BSya UMKM<span style={{ color: C.yellowDeep }}>+</span></div>
+        <div style={{ fontSize: 14, fontWeight: 900, letterSpacing: -0.2, lineHeight: 1 }}>BSya <span style={{ color: C.yellowDeep }}>Grow</span></div>
         <div style={{ fontSize: 10, color: C.muted, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{businessName}</div>
       </div>
       <button onClick={onAskAI} style={{ height: 34, padding: "0 12px", borderRadius: r(999), background: C.skySoft, color: C.skyDeep, border: "none", fontWeight: 800, fontSize: 12, fontFamily: F, display: "flex", alignItems: "center", gap: 5, cursor: "pointer" }}>
