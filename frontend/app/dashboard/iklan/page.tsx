@@ -89,7 +89,7 @@ export default function IklanPage() {
 
 function AdGenerator() {
   const profile = useProfile();
-  const { businessName, category } = useIdentity();
+  const { businessName } = useIdentity();
   const m = useIsMobile();
   const [desc, setDesc] = useState("");
   const [loading, setLoading] = useState(false);
@@ -147,7 +147,7 @@ function AdGenerator() {
 
           <div style={{ background: C.bg, borderRadius: r(14), padding: 14, fontSize: 12.5, fontWeight: 600, lineHeight: 1.55, whiteSpace: "pre-wrap", color: C.ink2, border: `1px solid ${C.line}` }}>{result}</div>
 
-          <SocialPreviews caption={result} businessName={businessName} category={category} isMobile={m} />
+          <SocialPreviews caption={result} businessName={businessName} isMobile={m} />
         </div>
       )}
     </div>
@@ -162,24 +162,14 @@ function deriveHeadline(text: string) {
   const first = (text.split(/\n|(?<=[.!?])\s/).find((s) => s.trim().length > 3) || text).trim();
   return first.length > 58 ? first.slice(0, 55).trimEnd() + "…" : first;
 }
-function adEmoji(category?: string, name?: string) {
-  const s = `${category ?? ""} ${name ?? ""}`.toLowerCase();
-  if (/(kopi|coffee|cafe|kafe|minuman|teh|juice)/.test(s)) return "☕";
-  if (/(roti|bakery|kue|cake|donat|pastr)/.test(s)) return "🥐";
-  if (/(sembako|warung|grocer|kelontong)/.test(s)) return "🛒";
-  if (/(fashion|baju|hijab|pakaian|busana|gamis)/.test(s)) return "👗";
-  if (/(makan|food|kuliner|resto|warteg|nasi|ayam|bakso|catering)/.test(s)) return "🍛";
-  if (/(skincare|kosmetik|beauty|kecantikan|parfum)/.test(s)) return "💄";
-  if (/(elektronik|gadget|hp|aksesoris)/.test(s)) return "📱";
-  return "🛍️";
-}
+// Generated ad creative shown inside every platform preview.
+const AD_IMAGE = "/Gemini_Generated_Image_gk425qgk425qgk42.png";
 
-function SocialPreviews({ caption, businessName, category, isMobile }: { caption: string; businessName: string; category?: string; isMobile: boolean }) {
+function SocialPreviews({ caption, businessName, isMobile }: { caption: string; businessName: string; isMobile: boolean }) {
   const headline = deriveHeadline(caption);
   const handle = slugifyHandle(businessName);
-  const emoji = adEmoji(category, businessName);
   const tags = [`#${businessName.replace(/\s+/g, "")}`, "#UMKM", "#PromoSpesial", "#BCASyariah"];
-  const shared = { caption, businessName, handle, emoji, headline, tags };
+  const shared = { caption, businessName, handle, headline, tags };
   return (
     <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 16, alignItems: "start" }}>
       <InstagramCard {...shared} />
@@ -189,7 +179,7 @@ function SocialPreviews({ caption, businessName, category, isMobile }: { caption
   );
 }
 
-type CardProps = { caption: string; businessName: string; handle: string; emoji: string; headline: string; tags: string[] };
+type CardProps = { caption: string; businessName: string; handle: string; headline: string; tags: string[] };
 
 function PlatformLabel({ icon, name, color }: { icon: React.ReactNode; name: string; color: string }) {
   return (
@@ -200,19 +190,23 @@ function PlatformLabel({ icon, name, color }: { icon: React.ReactNode; name: str
   );
 }
 
-function Visual({ emoji, headline, gradient, height, dark }: { emoji: string; headline: string; gradient: string; height: number; dark?: boolean }) {
+function Visual({ headline, height, showHeadline = true }: { headline: string; height: number; showHeadline?: boolean }) {
   return (
-    <div style={{ position: "relative", height, background: gradient, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-      <Deco size={70} rotate={20} color="rgba(255,255,255,0.18)" style={{ position: "absolute", right: -10, top: -16 }} />
-      <div style={{ fontSize: height > 280 ? 84 : 56, filter: "drop-shadow(0 6px 14px rgba(0,0,0,0.25))" }}>{emoji}</div>
-      <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: "26px 14px 12px", background: "linear-gradient(transparent, rgba(0,0,0,0.55))" }}>
-        <div style={{ color: "#fff", fontSize: dark ? 16 : 15, fontWeight: 900, lineHeight: 1.2, letterSpacing: -0.3, textShadow: "0 1px 6px rgba(0,0,0,0.4)" }}>{headline}</div>
-      </div>
+    <div style={{ position: "relative", height, background: "#0c0c14", overflow: "hidden" }}>
+      {/* blurred fill so the letterbox area looks intentional */}
+      <img src={AD_IMAGE} aria-hidden alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: "blur(18px) brightness(0.8)", transform: "scale(1.15)" }} />
+      {/* full creative — entire image always visible */}
+      <img src={AD_IMAGE} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", display: "block" }} />
+      {showHeadline && headline && (
+        <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: "30px 14px 12px", background: "linear-gradient(transparent, rgba(0,0,0,0.6))" }}>
+          <div style={{ color: "#fff", fontSize: 15, fontWeight: 900, lineHeight: 1.2, letterSpacing: -0.3, textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>{headline}</div>
+        </div>
+      )}
     </div>
   );
 }
 
-function InstagramCard({ caption, businessName, handle, emoji, headline, tags }: CardProps) {
+function InstagramCard({ caption, handle, headline, tags }: CardProps) {
   return (
     <div style={{ border: `1px solid ${C.line}`, borderRadius: r(14), overflow: "hidden", background: C.white }}>
       <PlatformLabel name="Instagram" color="#C13584" icon={SIc.instagram(18)} />
@@ -225,7 +219,7 @@ function InstagramCard({ caption, businessName, handle, emoji, headline, tags }:
           </div>
           {SIc.dots(18, C.ink2)}
         </div>
-        <Visual emoji={emoji} headline={headline} gradient={`linear-gradient(135deg, ${C.yellow}, ${C.yellowDeep})`} height={210} />
+        <Visual headline={headline} height={300} />
         <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "10px 10px 4px" }}>
           {SIc.heart(22)} {SIc.comment(22)} {SIc.send(22)}
           <div style={{ flex: 1 }} />
@@ -244,17 +238,16 @@ function InstagramCard({ caption, businessName, handle, emoji, headline, tags }:
   );
 }
 
-function TikTokCard({ caption, handle, emoji, headline }: CardProps) {
+function TikTokCard({ caption, handle, headline }: CardProps) {
   return (
     <div style={{ border: `1px solid ${C.line}`, borderRadius: r(14), overflow: "hidden", background: C.white }}>
       <PlatformLabel name="TikTok" color="#010101" icon={SIc.tiktok(17)} />
       <div style={{ position: "relative", borderRadius: r(10), overflow: "hidden", background: "#000" }}>
         <div style={{ position: "relative" }}>
-          <Visual emoji={emoji} headline="" gradient="linear-gradient(160deg, #2b2b3a, #0c0c14)" height={300} dark />
-          {/* center headline */}
-          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 10, padding: 16, pointerEvents: "none" }}>
-            <div style={{ fontSize: 64, filter: "drop-shadow(0 6px 14px rgba(0,0,0,0.4))" }}>{emoji}</div>
-            <div style={{ color: "#fff", fontSize: 15, fontWeight: 900, textAlign: "center", lineHeight: 1.25, textShadow: "0 2px 8px rgba(0,0,0,0.6)" }}>{headline}</div>
+          <Visual headline="" showHeadline={false} height={300} />
+          {/* center headline overlay */}
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: 18, pointerEvents: "none" }}>
+            <div style={{ color: "#fff", fontSize: 15, fontWeight: 900, textAlign: "center", lineHeight: 1.25, textShadow: "0 2px 10px rgba(0,0,0,0.85)" }}>{headline}</div>
           </div>
           {/* right action rail */}
           <div style={{ position: "absolute", right: 8, bottom: 64, display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
@@ -276,7 +269,7 @@ function TikTokCard({ caption, handle, emoji, headline }: CardProps) {
   );
 }
 
-function FacebookCard({ caption, businessName, handle, emoji, headline }: CardProps) {
+function FacebookCard({ caption, businessName, handle, headline }: CardProps) {
   return (
     <div style={{ border: `1px solid ${C.line}`, borderRadius: r(14), overflow: "hidden", background: C.white }}>
       <PlatformLabel name="Facebook" color="#1877F2" icon={SIc.facebook(18)} />
@@ -290,7 +283,7 @@ function FacebookCard({ caption, businessName, handle, emoji, headline }: CardPr
           {SIc.dots(18, C.ink2)}
         </div>
         <div style={{ padding: "0 10px 10px", fontSize: 12, color: C.ink, lineHeight: 1.5 }}>{clip(caption, 120)}</div>
-        <Visual emoji={emoji} headline={headline} gradient={`linear-gradient(135deg, ${C.sky}, ${C.skyDeep})`} height={170} />
+        <Visual headline={headline} height={230} />
         <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px", background: "#F0F2F5" }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 9.5, color: C.muted, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.3 }}>{handle}.bsya.id</div>
