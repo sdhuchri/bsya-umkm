@@ -33,7 +33,6 @@ export default function LoginPage() {
             <div className="text-[22px] font-black tracking-tight text-ink">
               BSya <span className="text-yellowdeep">Grow</span>
             </div>
-            <div className="text-[10.5px] font-bold uppercase tracking-wider text-muted">Super App · Powered by AI</div>
           </div>
         </Link>
 

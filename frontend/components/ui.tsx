@@ -1,27 +1,23 @@
 import React from "react";
 import { C, F, r } from "@/lib/theme";
 
-// ─── Smiley logo ───
+// ─── BSya logo ───
 export function Mark({ size = 32 }: { size?: number }) {
   return (
-    <div
+    <img
+      src="/bsya-logo.png"
+      alt="BSya Grow"
+      width={size}
+      height={size}
       style={{
         width: size,
         height: size,
         borderRadius: r(size * 0.3),
-        background: C.sky,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        objectFit: "cover",
         flexShrink: 0,
+        display: "block",
       }}
-    >
-      <svg width={size * 0.7} height={size * 0.7} viewBox="0 0 24 24">
-        <rect x="5" y="5" width="5" height="5" rx={r(1.5)} fill={C.yellow} />
-        <rect x="14" y="5" width="5" height="5" rx={r(1.5)} fill={C.yellow} />
-        <path d="M5 14 Q 12 21 19 14" stroke={C.yellow} strokeWidth="3.2" strokeLinecap="round" fill="none" />
-      </svg>
-    </div>
+    />
   );
 }
 

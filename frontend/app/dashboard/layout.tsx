@@ -96,7 +96,6 @@ function Sidebar() {
         <Mark size={32} />
         <div>
           <div style={{ fontWeight: 800, fontSize: 16, letterSpacing: -0.2 }}>BSya Grow</div>
-          <div style={{ fontSize: 10.5, color: C.muted, fontWeight: 600, letterSpacing: 0.4, textTransform: "uppercase" }}>Super App</div>
         </div>
       </div>
       {NAV.map((it, i) => {

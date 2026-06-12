@@ -114,7 +114,6 @@ function DecorativePanel() {
           <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: -0.3 }}>
             BSya <span style={{ color: C.yellow }}>Grow</span>
           </div>
-          <div style={{ fontSize: 10.5, fontWeight: 700, opacity: 0.85, letterSpacing: 0.4, marginTop: 2 }}>SUPER APP · POWERED BY AI</div>
         </div>
       </div>
 

@@ -44,7 +44,7 @@ export default function Landing() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-xs font-bold tracking-wide text-white backdrop-blur"
           >
-            ✨ SUPER APP UMKM · BCA SYARIAH
+            ✨ UMKM · BCA SYARIAH
           </motion.div>
 
           <h1 className="mt-6 text-4xl font-black leading-tight tracking-tight text-white sm:text-6xl">
