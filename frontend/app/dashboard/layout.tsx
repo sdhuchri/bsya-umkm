@@ -95,7 +95,7 @@ function Sidebar() {
       <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "4px 8px 18px" }}>
         <Mark size={32} />
         <div>
-          <div style={{ fontWeight: 800, fontSize: 16, letterSpacing: -0.2 }}>BSya Grow</div>
+          <div style={{ fontWeight: 800, fontSize: 16, letterSpacing: -0.2 }}><span style={{ color: C.sky }}>BSya</span> <span style={{ color: C.yellowDeep }}>Grow</span></div>
         </div>
       </div>
       {NAV.map((it, i) => {
@@ -171,7 +171,7 @@ function MobileHeader({ onAskAI }: { onAskAI: () => void }) {
     <div style={{ height: 56, padding: "0 16px", display: "flex", alignItems: "center", gap: 10, borderBottom: `1px solid ${C.line}`, background: C.white, position: "sticky", top: 0, zIndex: 20 }}>
       <Mark size={30} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 900, letterSpacing: -0.2, lineHeight: 1 }}>BSya <span style={{ color: C.yellowDeep }}>Grow</span></div>
+        <div style={{ fontSize: 14, fontWeight: 900, letterSpacing: -0.2, lineHeight: 1 }}><span style={{ color: C.sky }}>BSya</span> <span style={{ color: C.yellowDeep }}>Grow</span></div>
         <div style={{ fontSize: 10, color: C.muted, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{businessName}</div>
       </div>
       <button onClick={onAskAI} style={{ height: 34, padding: "0 12px", borderRadius: r(999), background: C.skySoft, color: C.skyDeep, border: "none", fontWeight: 800, fontSize: 12, fontFamily: F, display: "flex", alignItems: "center", gap: 5, cursor: "pointer" }}>
