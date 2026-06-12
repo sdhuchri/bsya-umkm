@@ -22,6 +22,19 @@ const RECOMMENDED: Supplier[] = [
   { name: "Toko Grosir Amanah", cat: "Snack & minuman", loc: "Bekasi", rating: 4.8, last: "—", tag: "hemat 15%" },
 ];
 
+// Demo location of the business — suppliers are searched around this city.
+const CITY = "Bekasi";
+
+type Nearby = { name: string; cat: string; dist: string; price: string; save: string };
+const NEARBY: Nearby[] = [
+  { name: "UD Berkah Tani", cat: "Beras & Sembako", dist: "1.2 km", price: "Rp 11.800/kg", save: "hemat 12%" },
+  { name: "Toko Grosir Amanah", cat: "Snack & minuman", dist: "2.4 km", price: "Rp 2.100/pcs", save: "hemat 15%" },
+  { name: "CV Sumber Makmur", cat: "Minyak & gula", dist: "3.1 km", price: "Rp 15.500/L", save: "hemat 9%" },
+];
+
+const mapsSearchUrl = (q: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+const mapsEmbedUrl = (q: string) => `https://maps.google.com/maps?q=${encodeURIComponent(q)}&z=12&output=embed`;
+
 export default function SupplierPage() {
   const m = useIsMobile();
   const [suppliers, setSuppliers] = useState<Supplier[]>(INITIAL);
@@ -77,6 +90,43 @@ export default function SupplierPage() {
             Berdasarkan kategori belanja kamu, AI menemukan supplier yang bisa hemat hingga <b>Rp 1.4jt/bulan</b>.
           </div>
           <button onClick={() => setRecOpen(true)} style={{ background: C.ink, color: C.white, border: "none", padding: "10px 16px", borderRadius: r(999), fontSize: 12.5, fontWeight: 700, fontFamily: F, cursor: "pointer" }}>Lihat rekomendasi →</button>
+        </div>
+      </div>
+
+      <div style={{ background: C.white, borderRadius: r(18), padding: 20, border: `1px solid ${C.line}` }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, gap: 10, flexWrap: "wrap" }}>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 800 }}>Cari Supplier Terdekat</div>
+            <div style={{ fontSize: 11.5, color: C.muted, fontWeight: 600, marginTop: 2 }}>Supplier termurah & terdekat dari lokasi usahamu</div>
+          </div>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: C.skySoft, color: C.skyDeep, fontSize: 11, fontWeight: 800, padding: "5px 11px", borderRadius: 999 }}>📍 {CITY}</div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: m ? "1fr" : "1.4fr 1fr", gap: 16 }}>
+          <div style={{ borderRadius: r(14), overflow: "hidden", border: `1px solid ${C.line}` }}>
+            <iframe
+              title="Peta supplier terdekat"
+              src={mapsEmbedUrl("grosir sembako " + CITY)}
+              style={{ width: "100%", height: m ? 220 : 320, border: 0, display: "block" }}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {NEARBY.map((s, i) => (
+              <a key={i} href={mapsSearchUrl(`${s.name} ${CITY}`)} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", color: "inherit", display: "flex", alignItems: "center", gap: 12, padding: 12, border: `1px solid ${C.line}`, borderRadius: r(12), background: C.bg }}>
+                <div style={{ width: 38, height: 38, borderRadius: r(10), background: C.skySoft, color: C.skyDeep, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>📍</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.name}</div>
+                  <div style={{ fontSize: 10.5, color: C.muted, fontWeight: 600, marginTop: 2 }}>{s.cat} · {s.dist}</div>
+                </div>
+                <div style={{ textAlign: "right", flexShrink: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: C.ink }}>{s.price}</div>
+                  <div style={{ fontSize: 9.5, fontWeight: 800, color: C.ok, background: "#E5F7EE", padding: "2px 6px", borderRadius: 999, marginTop: 2, display: "inline-block" }}>{s.save}</div>
+                </div>
+              </a>
+            ))}
+            <a href={mapsSearchUrl("grosir sembako " + CITY)} target="_blank" rel="noopener noreferrer" style={{ textAlign: "center", textDecoration: "none", background: C.ink, color: C.white, padding: "10px 14px", borderRadius: r(999), fontSize: 12, fontWeight: 800 }}>Buka di Google Maps →</a>
+          </div>
         </div>
       </div>
 
