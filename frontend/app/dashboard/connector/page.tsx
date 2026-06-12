@@ -40,31 +40,45 @@ const CONNECTORS: Connector[] = [
     deltas: [],
   },
   {
-    id: "mekari",
-    name: "Mekari Jurnal",
-    desc: "Tarik jurnal & buku besar yang sudah kamu catat di Mekari.",
+    id: "gmail",
+    name: "Gmail",
+    desc: "Tarik faktur & struk dari kotak masukmu — lampiran dibaca otomatis.",
     kind: "mcp",
-    icon: "chart",
-    accent: "#1A73E8",
-    rows: 842,
+    icon: "mail",
+    accent: "#EA4335",
+    rows: 412,
     deltas: [
-      { label: "Pemasukan tercatat", from: "Rp 42,85 jt", to: "Rp 55,30 jt", note: "+Rp 12,45 jt dari Mekari Jurnal" },
-      { label: "Akun terhubung", from: "12 akun", to: "28 akun", note: "bagan akun Mekari digabung" },
-      { label: "PPh Final 0,5%", from: "Rp 245.000", to: "Rp 276.500", note: "dihitung ulang dari omzet gabungan" },
+      { label: "Faktur & struk dari email", from: "0 dok", to: "37 dok", note: "lampiran PDF diekstrak otomatis" },
+      { label: "Pengeluaran tercatat", from: "Rp 28,14 jt", to: "Rp 33,60 jt", note: "+Rp 5,46 jt dari tagihan email" },
+      { label: "Vendor terdeteksi", from: "6 vendor", to: "19 vendor", note: "dipetakan ke kategori biaya" },
     ],
   },
   {
-    id: "accurate",
-    name: "Accurate Online",
-    desc: "Sinkronkan stok & penjualan dari Accurate.",
+    id: "gcal",
+    name: "Google Calendar",
+    desc: "Sinkronkan jadwal pesanan & event jadi proyeksi arus kas.",
     kind: "mcp",
-    icon: "store",
-    accent: "#E8662A",
-    rows: 511,
+    icon: "calendar",
+    accent: "#4285F4",
+    rows: 23,
     deltas: [
-      { label: "Penjualan tergabung", from: "Rp 42,85 jt", to: "Rp 48,10 jt", note: "+Rp 5,25 jt dari Accurate" },
-      { label: "SKU stok terlacak", from: "0 item", to: "164 item", note: "kartu stok Accurate ditarik" },
-      { label: "SAK EMKM", from: "78% lengkap", to: "94% lengkap", note: "neraca terisi otomatis" },
+      { label: "Agenda pesanan & event", from: "0", to: "23 agenda", note: "ditarik dari Google Calendar" },
+      { label: "Pengingat jatuh tempo", from: "manual", to: "otomatis", note: "PPh & tagihan masuk kalender" },
+      { label: "Proyeksi arus kas", from: "1 bln", to: "3 bln", note: "dari jadwal pesanan mendatang" },
+    ],
+  },
+  {
+    id: "gdrive",
+    name: "Google Drive",
+    desc: "Hubungkan folder invoice & nota — BSya yang membaca isinya.",
+    kind: "mcp",
+    icon: "drive",
+    accent: "#1FA463",
+    rows: 284,
+    deltas: [
+      { label: "Dokumen keuangan", from: "0 file", to: "84 file", note: "invoice & nota dari Drive" },
+      { label: "Baris transaksi", from: "1.204", to: "1.488", note: "+284 baris hasil ekstraksi" },
+      { label: "Arsip pajak", from: "tidak ada", to: "lengkap 2025", note: "bukti potong terkumpul" },
     ],
   },
   {
@@ -78,6 +92,20 @@ const CONNECTORS: Connector[] = [
     deltas: [
       { label: "Baris transaksi", from: "1.204", to: "1.524", note: "+320 baris dari Sheets" },
       { label: "Kategori biaya", from: "8", to: "15", note: "kategori manualmu dipetakan" },
+    ],
+  },
+  {
+    id: "notion",
+    name: "Notion",
+    desc: "Tarik database catatan penjualan & operasional harianmu.",
+    kind: "mcp",
+    icon: "notion",
+    accent: "#2F2F2F",
+    rows: 156,
+    deltas: [
+      { label: "Catatan penjualan harian", from: "0", to: "156 entri", note: "database Notion ditarik" },
+      { label: "Kategori produk", from: "8", to: "22", note: "dipetakan dari Notion" },
+      { label: "Pemasukan tercatat", from: "Rp 42,85 jt", to: "Rp 47,90 jt", note: "+Rp 5,05 jt dari catatan Notion" },
     ],
   },
 ];
@@ -171,7 +199,7 @@ export default function ConnectorPage() {
     <div style={{ flex: 1, padding: m ? 16 : 24, overflow: "auto", display: "flex", flexDirection: "column", gap: m ? 14 : 18 }}>
       <PageHeader title="Connector" subtitle="Hubungkan sumber data bisnismu — BSya menyesuaikan, bukan menggantikan." />
 
-      <AIBubble text="Sudah pakai Mekari, Accurate, atau catat di Excel? Tidak perlu pindah. Sambungkan saja — saya gabungkan dengan transaksi BCA Syariah-mu, lalu hitung ulang Laporan, Pajak, dan Dashboard secara otomatis." />
+      <AIBubble text="Sudah pakai Gmail, Google Calendar, Google Drive, atau Notion? Tidak perlu pindah. Sambungkan saja lewat MCP — saya tarik faktur, jadwal, dan catatanmu, gabungkan dengan transaksi BCA Syariah-mu, lalu hitung ulang Laporan, Pajak, dan Dashboard secara otomatis." />
 
       <div style={{ display: "grid", gridTemplateColumns: m ? "1fr" : "repeat(2, 1fr)", gap: m ? 12 : 16 }}>
         {allCards.map((conn) => {
